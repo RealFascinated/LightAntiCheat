@@ -13,7 +13,7 @@ jobs:
       matrix:
         # Use these Java versions
         java: [
-          24,    # Java version we use
+          25,    # Java version we use
         ]
     runs-on: ubuntu-22.04
     steps:
