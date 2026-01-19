@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.gradleup.shadow' version '9.2.0'
     id 'java'
     id 'maven-publish'
 }
@@ -11,8 +11,10 @@ repositories {
     mavenCentral()
     // Config Updater
     maven { url 'https://oss.sonatype.org/content/groups/public/' }
+
     // Floodgate
     maven { url 'https://repo.opencollab.dev/main/' }
+
     // FoliaLib
     maven {
         name = "tcoded-releases"
@@ -60,7 +62,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/tiredvekster/LightAntiCheat"
+            url = "https://maven.pkg.github.com/RealFascinated/LightAntiCheat"
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
