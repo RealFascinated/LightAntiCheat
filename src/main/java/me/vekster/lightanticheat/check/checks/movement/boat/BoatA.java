@@ -76,14 +76,20 @@ public class BoatA extends MovementCheck implements Listener {
         Entity boat = player.getVehicle();
         if (boat == null) {
             buffer.put("boatFlightEvents", 0);
+            buffer.put("boatLocation", null);
             return;
         }
 
         if (boat.getType() != EntityType.BOAT &&
                 !boat.getType().name().equalsIgnoreCase("CHEST_BOAT")) {
             buffer.put("boatFlightEvents", 0);
+            buffer.put("boatLocation", null);
             return;
         }
+
+        // Store boat location for setback
+        Location currentBoatLocation = boat.getLocation();
+        buffer.put("boatLocation", currentBoatLocation);
 
         if (System.currentTimeMillis() - buffer.getLong("entityCollisionTime") <= 3000) {
             buffer.put("boatFlightEvents", 0);
@@ -176,6 +182,10 @@ public class BoatA extends MovementCheck implements Listener {
         if (buffer.getInt("flags") <= 3)
             return;
 
+        // Store previous boat location for setback before calling violation
+        Location previousBoatLocation = buffer.getLocation("boatLocation");
+        buffer.put("previousBoatLocation", previousBoatLocation);
+
         callViolationEventIfRepeat(player, lacPlayer, event.getEvent(), buffer, 2000);
     }
 
@@ -206,6 +216,7 @@ public class BoatA extends MovementCheck implements Listener {
         if (boat == null) {
             buffer.put("boatSpeedEvents", 0);
             buffer.put("previousLocation", event.getFrom());
+            buffer.put("boatLocation", null);
             return;
         }
 
@@ -213,8 +224,13 @@ public class BoatA extends MovementCheck implements Listener {
                 !boat.getType().name().equalsIgnoreCase("CHEST_BOAT")) {
             buffer.put("boatSpeedEvents", 0);
             buffer.put("previousLocation", event.getFrom());
+            buffer.put("boatLocation", null);
             return;
         }
+
+        // Store boat location for setback
+        Location currentBoatLocation = boat.getLocation();
+        buffer.put("boatLocation", currentBoatLocation);
 
         boolean liquid = false;
 

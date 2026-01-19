@@ -7,6 +7,7 @@ import me.vekster.lightanticheat.util.async.AsyncUtil;
 import me.vekster.lightanticheat.util.detection.LeanTowards;
 import me.vekster.lightanticheat.util.scheduler.Scheduler;
 import me.vekster.lightanticheat.version.VerUtil;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
@@ -116,19 +117,51 @@ public class GroundUtil extends BlockUtil {
     }
 
     private static boolean isOnBlock(Entity entity, Set<Block> downBlocks) {
+        if (downBlocks == null || downBlocks.isEmpty())
+            return false;
+        
         boolean notPassable = false;
         boolean occluding = true;
         for (Block block : downBlocks) {
-            String downBlockName = block.getRelative(BlockFace.DOWN).getType().name().toLowerCase();
-            if (!VerUtil.isPassable(block) || downBlockName.endsWith("_wall") || downBlockName.endsWith("_fence") ||
-                    downBlockName.endsWith("_fence_gate") || downBlockName.endsWith("shulker_box") ||
-                    downBlockName.endsWith("_door")) {
-                notPassable = true;
-                if (!occluding) break;
-            }
-            if (!block.getType().isOccluding()) {
-                occluding = false;
-                if (notPassable) break;
+            if (block == null)
+                continue;
+            
+            try {
+                World world = block.getWorld();
+                if (world == null)
+                    continue;
+                
+                int chunkX = block.getX() >> 4;
+                int chunkZ = block.getZ() >> 4;
+                if (!world.isChunkLoaded(chunkX, chunkZ))
+                    continue;
+                
+                Block downBlock = block.getRelative(BlockFace.DOWN);
+                if (downBlock == null)
+                    continue;
+                
+                World downWorld = downBlock.getWorld();
+                if (downWorld == null)
+                    continue;
+                
+                int downChunkX = downBlock.getX() >> 4;
+                int downChunkZ = downBlock.getZ() >> 4;
+                if (!downWorld.isChunkLoaded(downChunkX, downChunkZ))
+                    continue;
+                
+                String downBlockName = downBlock.getType().name().toLowerCase();
+                if (!VerUtil.isPassable(block) || downBlockName.endsWith("_wall") || downBlockName.endsWith("_fence") ||
+                        downBlockName.endsWith("_fence_gate") || downBlockName.endsWith("shulker_box") ||
+                        downBlockName.endsWith("_door")) {
+                    notPassable = true;
+                    if (!occluding) break;
+                }
+                if (!block.getType().isOccluding()) {
+                    occluding = false;
+                    if (notPassable) break;
+                }
+            } catch (Exception e) {
+                continue;
             }
         }
         if (notPassable) {

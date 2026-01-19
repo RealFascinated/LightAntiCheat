@@ -239,9 +239,9 @@ public class LACCommand implements TabExecutor {
                     return true;
                 }
                 if (args.length == 5)
-                    FoliaUtil.teleportPlayer(player, new Location(world, x, y, z));
+                    FoliaUtil.teleportEntity(player, new Location(world, x, y, z));
                 else
-                    FoliaUtil.teleportPlayer(player, new Location(world, x, y, z, yaw, pitch));
+                    FoliaUtil.teleportEntity(player, new Location(world, x, y, z, yaw, pitch));
                 return true;
             }
         }

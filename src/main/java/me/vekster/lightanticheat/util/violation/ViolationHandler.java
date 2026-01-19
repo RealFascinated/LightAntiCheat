@@ -2,8 +2,10 @@ package me.vekster.lightanticheat.util.violation;
 
 import me.vekster.lightanticheat.api.event.LACPunishmentEvent;
 import me.vekster.lightanticheat.api.event.LACViolationEvent;
+import me.vekster.lightanticheat.check.Check;
 import me.vekster.lightanticheat.check.CheckName;
 import me.vekster.lightanticheat.check.CheckSetting;
+import me.vekster.lightanticheat.check.buffer.Buffer;
 import me.vekster.lightanticheat.player.LACPlayer;
 import me.vekster.lightanticheat.player.cache.history.HistoryElement;
 import me.vekster.lightanticheat.player.violation.PlayerViolations;
@@ -19,6 +21,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,6 +33,42 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ViolationHandler implements Listener {
+
+    private static void handleBoatSetback(LACViolationEvent event, CheckSetting checkSetting) {
+        Player player = event.getPlayer();
+        Entity vehicle = player.getVehicle();
+        
+        if (vehicle == null || (vehicle.getType() != EntityType.BOAT && 
+                !vehicle.getType().name().equalsIgnoreCase("CHEST_BOAT"))) {
+            if (event.getCancellable() != null) {
+                event.getCancellable().setCancelled(true);
+            }
+            return;
+        }
+
+        Listener listener = Check.getListener(checkSetting.name);
+        if (!(listener instanceof Check checkInstance)) {
+            if (event.getCancellable() != null) {
+                event.getCancellable().setCancelled(true);
+            }
+            return;
+        }
+
+        Buffer buffer = checkInstance.getBuffer(player);
+        Location previousBoatLocation = buffer.getLocation("previousBoatLocation");
+
+        if (event.getCancellable() != null) {
+            event.getCancellable().setCancelled(true);
+        }
+
+        if (previousBoatLocation != null) {
+            Scheduler.runTask(true, () -> {
+                if (vehicle.isValid() && player.isInsideVehicle() && player.getVehicle() == vehicle) {
+                    FoliaUtil.teleportEntity(vehicle, previousBoatLocation);
+                }
+            });
+        }
+    }
 
     private static boolean isVerticalSetback(Player player, LACPlayer lacPlayer, CheckSetting checkSetting) {
         if (checkSetting.name.type != CheckName.CheckType.MOVEMENT)
@@ -105,7 +145,9 @@ public class ViolationHandler implements Listener {
 
         if (checkSetting.setback && lacPlayer.violations.getViolations(checkSetting.name) >= checkSetting.setbackVio &&
                 event.getCancellable() != null) {
-            if (!isVerticalSetback(event.getPlayer(), lacPlayer, checkSetting)) {
+            if (checkSetting.name == CheckName.BOAT_A && event.getPlayer().isInsideVehicle()) {
+                handleBoatSetback(event, checkSetting);
+            } else if (!isVerticalSetback(event.getPlayer(), lacPlayer, checkSetting)) {
                 event.getCancellable().setCancelled(true);
             } else {
                 Location location = event.getPlayer().getLocation();
@@ -131,7 +173,7 @@ public class ViolationHandler implements Listener {
                     if (cancel) {
                         for (Block block : CheckUtil.getWithinBlocks(event.getPlayer())) {
                             if (!CheckUtil.isActuallyPassable(block)) {
-                                FoliaUtil.teleportPlayer(event.getPlayer(), location.add(0, 1 - (location.getY() % 1), 0));
+                                FoliaUtil.teleportEntity(event.getPlayer(), location.add(0, 1 - (location.getY() % 1), 0));
                                 break;
                             }
                         }
@@ -142,10 +184,10 @@ public class ViolationHandler implements Listener {
                                 break;
                             }
                         }
-                        if (slab) FoliaUtil.teleportPlayer(event.getPlayer(), location.subtract(0, 0.5, 0));
+                        if (slab) FoliaUtil.teleportEntity(event.getPlayer(), location.subtract(0, 0.5, 0));
                         break;
                     }
-                    FoliaUtil.teleportPlayer(event.getPlayer(), location.subtract(0, 1, 0));
+                    FoliaUtil.teleportEntity(event.getPlayer(), location.subtract(0, 1, 0));
                 }
             }
         }

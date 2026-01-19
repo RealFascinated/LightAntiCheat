@@ -40,7 +40,7 @@ public abstract class Check extends CheckUtil {
         return CHECK_SETTING.getOrDefault(name, null);
     }
 
-    protected Buffer getBuffer(Player player) {
+    public Buffer getBuffer(Player player) {
         return new Buffer(this, player);
     }
 

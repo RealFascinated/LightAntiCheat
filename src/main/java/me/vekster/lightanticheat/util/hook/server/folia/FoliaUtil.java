@@ -118,7 +118,7 @@ public class FoliaUtil {
         foliaLib.getImpl().runTimerAsync(task, delayInTicks, periodInTicks);
     }
 
-    public static void teleportPlayer(Player player, Location location) {
+    public static void teleportEntity(Entity player, Location location) {
         if (!isFolia()) player.teleport(location);
         else foliaLib.getImpl().teleportAsync(player, location);
     }

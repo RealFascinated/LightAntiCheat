@@ -12,7 +12,6 @@ import me.vekster.lightanticheat.util.hook.server.folia.FoliaUtil;
 import me.vekster.lightanticheat.util.hook.plugin.FloodgateHook;
 import me.vekster.lightanticheat.util.scheduler.Scheduler;
 import me.vekster.lightanticheat.version.VerUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -112,7 +111,7 @@ public class SpeedE extends MovementCheck implements Listener {
             return;
 
         event.setCancelled(true);
-        FoliaUtil.teleportPlayer(player, event.getFrom());
+        FoliaUtil.teleportEntity(player, event.getFrom());
 
         Scheduler.runTaskLater(() -> {
             if (System.currentTimeMillis() - buffer.getLong("lastTeleport") < 1000)
@@ -147,7 +146,7 @@ public class SpeedE extends MovementCheck implements Listener {
             return;
 
         event.setCancelled(true);
-        FoliaUtil.teleportPlayer(player, event.getFrom());
+        FoliaUtil.teleportEntity(player, event.getFrom());
 
         Scheduler.runTaskLater(() -> {
             if (System.currentTimeMillis() - buffer.getLong("lastTeleport") < 1000)
